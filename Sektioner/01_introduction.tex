@@ -2,6 +2,9 @@
 
 I dette dokument vil Converge produktets udrulning blive beskrevet. Udrulningen er handling af at udrulle et stykke software på en server et sted, så de brugere der har brug for det kan tilgå det.
 
+\section{Converge-cluster udrulning}
+
+\section{Converge-SPA udrulning}
 
 \section{Udrulnings aktiviteter}
 
@@ -93,4 +96,29 @@ Under hver service findes der en mappe charts hvilket indeholder disse resourcer
 
 Converge har opsat det sådan at for hver replikation af en pod, vil deployment først lave en ny pod efter de nye specifikationer. Efter det er der brugt et readiness check, som pinger programmet for at høre om det er i live, hvis det er i live, bliver den såkaldte pod koblet til internettet og den eksisterende pod bliver fjernet. Dette gør at der ikke bliver lukket op for applikationer der ikke kan køre.
 
-Tilhørende de fleste ~\cite[Docker]{documentation_terms}
+Tilhørende de fleste pods asp.net core services er der tilkoblet noget persistering i form af en mongodb database. Disse mongodb databaser bliver automatisk udrullet og versioneret sammen med applikationen via helm. Det mongodb chart er et officielt chart som man kan hente fra det officielle helm repository \fxfatal{Find link for helm stable repo}.
+
+\section{Afinstallering}
+
+Kubernetes afinstallering er nok det simpleste i systemet, når applikationen er blevet deaktiveret, så vil kubernetes automatisk deallokere applikationen. I et manuelt flow, ville man selv skulle farm skifte til en anden server for at undgå nede tid, mens man udrullede et nyt vm image på en anden server, derefter teste det ved at farm skifte tilbage. Alt dette er automatisk gjort af kubernetes.
+
+\section{Aktivering}
+
+Kubernetes vil aktivere et produkt når det har bestået tests, dvs. koble det til en load balancer \fxfatal{termer Load balancer} og en ingress \fxfatal{termer ingress}. Load balancing gør at man kan have horizontal applikations skalering \fxfatal{Horizontal applikation scaling}. Horizontal applikations skalering er det at skallere en applikation til mange identiske og parallelle. Dette er noget Kubernetes håndtere automatisk med resourcen \textbf{service} \fxfatal{termer kubernetes service}. Ingress er det at mappe en meningsfuld url til en service i kubernetes. Ingress er den eneste grænseflade til internettet, udover selve kubernetes kontrol fladen.
+
+
+\section{Deaktivering}
+
+Kubernetes vil automatisk deaktivere et produkt, når en ny version har bestået nogle basale tests. Derefter vil den overflødige pod(s) blive deaktiveret og fjernet fra internettet, samt deallokeret. Til feature deaktivering er feature flags i gitlab brugt. Feature flags er i dette tilfælde environment variable \fxfatal{termer environment variable}, som applikationen kan se og håndtere. Et alternativ er at lave et database opslag, som f.eks. en setting, som man kan styre udefra, muligvis med en administrator grænseflade. Men i dette tilfælde er der brugt feature flags, samt simple feature branches \fxfatal{termer feature branches}, normalt vil dette ikke tælle som deaktivering, men fordi der er så kort tid fra indlevering af kode, til udrulning, så kan begrebet GitOps anvendes \fxfatal{termer GitOps}. GitOps betyder GitOperations og betyder at have hele ens miljø direkte i Git, lige fra infrastruktur som kubernetes til applikations kode og til variable til feature toggling \fxfatal{termer feature toggling}.
+
+\section{Opdatering}
+
+Det at opdatere i kubernetes er ikke gjort ret meget, da kubernetes køre efter den philosofi, kvæ ikke køledyr \fxfatal{Kubernetes cattle not pets}. Hvilket betyder at der ikke er behov for at passe godt på de enkelte services, og måske kun opdatere et bibliotek af gangen, eller ændre en smule i en dll. Med kubernetes, bliver det hele erstattet og et nyt frisk docker image tager dets plads.
+
+\section{Indbygget opdatering}
+
+Indbygget opdatering kunne godt være brugt til converge-spa, men så brugeren får en besked når der er en nyere version af den side brugt. Dette er dog ikke anvendt. Det eneste man kunne forestille sig ville passe er at Kubernetes selv opdatere sine komponenter.
+
+\section{Versions sporing}
+
+Fordi GitOps er brugt, er der meget af den information der ender i Kubernetes under streng versions kontrol og derfor sporing. Lige præcis den version af et Helm chart er ikke logget i Git, men er tilgængelig via. helm cli \fxfatal{termer Helm commandline interface}. Det samme gælder docker images. Docker images er gemt i GitLab og er tilgængelige der. Alt dette er under versions sporing, så et enkelt commit i git kan spores til den kørende kode i Kubernetes, og omvendt.
