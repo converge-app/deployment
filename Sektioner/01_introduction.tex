@@ -2,11 +2,22 @@
 
 I dette dokument vil Converge produktets udrulning blive beskrevet. Udrulningen er handling af at udrulle et stykke software på en server et sted, så de brugere der har brug for det kan tilgå det.
 
-\section{Converge-cluster udrulning}
+\chapter{System udrulning}
 
-\section{Converge-SPA udrulning}
+Systemet er udrullet på 2 fronter. Converge-cluster og Zeit now. Begge er vist på Figur ~\ref{fig:system-development}. bemært den måde de forskellige services er delt op på.
 
-\section{Udrulnings aktiviteter}
+\begin{figure}[H]
+    \begin{small}
+        \begin{center}
+            \includegraphics[width=0.95\textwidth]{software-architecture/physical-view/deployment/deployment.pdf}
+        \end{center}
+        \caption{Udrulning}
+        \label{fig:system-deployment}
+    \end{small}
+\end{figure}
+
+
+\chapter{Udrulnings aktiviteter}
 
 Udrulningen er inddelt i aktiviteter, som er defineret for software udrulningen. Dog er det kun nogle af disse, hvilket er brugt til Converge.
 
@@ -54,7 +65,7 @@ Disse aktiviteter er beskrevet som led af et DevOps ~\cite{documentation_terms} 
 
 Tabel ~\ref{tab:devops-relation}~\cite{documentation_terms} viser Converge miljø i forhold til disse aktiviteter. Det skal dog siges at disse aktiviteter ikke kun er til anvendelse, men også mere blødt som en arbejdsprocess, udført af Converge teamet. Det er her DevOps kommer ind i billedet, som ved agil udvikling gør at dette kan gøres nemmere, og automatistere så meget af processen som muligt.
 
-Til release er der brugt git, eller nærmere continuous delivery. Når en udvikler skubber noget kode til git master (release branch) så vil koden blive bygget af en GitLab pipeline og udgivet med Helm og installeret på et Kubernetes cluster hostet hos Google. Derefter kan koden blive aktiveret direkte i GitLab, så koden kan blive installeret med det samme, men først ramme en brøkdel af slutbrugerne, for at kvalitetes sikre produktet. Det meste af denne opstilling er gemt i Git, det eneste undladt er feature flags \fxfatal{ref feature flags} og secrets, som privat nøgler osv.
+Til release er der brugt git, eller nærmere continuous delivery. Når en udvikler skubber noget kode til git master (release branch) så vil koden blive bygget af en GitLab pipeline og udgivet med Helm og installeret på et Kubernetes cluster hostet hos Google. Derefter kan koden blive aktiveret direkte i GitLab, så koden kan blive installeret med det samme, men først ramme en brøkdel af slutbrugerne, for at kvalitetes sikre produktet. Det meste af denne opstilling er gemt i Git, det eneste undladt er feature flags \cite{documentation_terms} og secrets, som privat nøgler osv.
 
 Hver sektion vil blive beskrevet med tekst og diagrammer relaterende til Converge begreber og anvendelser.
 
@@ -80,7 +91,7 @@ Til at illustrere dette er der anvendt et diagram over udgivelses processen.
     \end{small}
 \end{figure}
 
-Som beskrevet med figur~\ref{fig:release-overview} kan det bemærkes at det beskrevet laver en release og ruller den ud på kubernetes i produktions miljøet. Dog er det ikke beskrevet om den ændring er slået til eller ej, det er beskrevet i aktivering, og selve det at få kode i master branch er beskrevet i ~\cite{documentation_development} \fxfatal{Add pages to documentation development} under Git og Continuous Integration ~\cite{documentation_terms}.
+Som beskrevet med figur~\ref{fig:release-overview} kan det bemærkes at det beskrevet laver en release og ruller den ud på kubernetes i produktions miljøet. Dog er det ikke beskrevet om den ændring er slået til eller ej, det er beskrevet i aktivering, og selve det at få kode i master branch er beskrevet i ~\cite{documentation_development} under Git og Continuous Integration ~\cite{documentation_terms}.
 
 \section{Installation}
 
@@ -96,7 +107,7 @@ Under hver service findes der en mappe charts hvilket indeholder disse resourcer
 
 Converge har opsat det sådan at for hver replikation af en pod, vil deployment først lave en ny pod efter de nye specifikationer. Efter det er der brugt et readiness check, som pinger programmet for at høre om det er i live, hvis det er i live, bliver den såkaldte pod koblet til internettet og den eksisterende pod bliver fjernet. Dette gør at der ikke bliver lukket op for applikationer der ikke kan køre.
 
-Tilhørende de fleste pods asp.net core services er der tilkoblet noget persistering i form af en mongodb database. Disse mongodb databaser bliver automatisk udrullet og versioneret sammen med applikationen via helm. Det mongodb chart er et officielt chart som man kan hente fra det officielle helm repository \fxfatal{Find link for helm stable repo}.
+Tilhørende de fleste pods asp.net core services er der tilkoblet noget persistering i form af en mongodb database. Disse mongodb databaser bliver automatisk udrullet og versioneret sammen med applikationen via helm. Det mongodb chart er et officielt chart som man kan hente fra det officielle helm repository \cite{documentation_terms}.
 
 \section{Afinstallering}
 
@@ -104,16 +115,16 @@ Kubernetes afinstallering er nok det simpleste i systemet, når applikationen er
 
 \section{Aktivering}
 
-Kubernetes vil aktivere et produkt når det har bestået tests, dvs. koble det til en load balancer \fxfatal{termer Load balancer} og en ingress \fxfatal{termer ingress}. Load balancing gør at man kan have horizontal applikations skalering \fxfatal{Horizontal applikation scaling}. Horizontal applikations skalering er det at skallere en applikation til mange identiske og parallelle. Dette er noget Kubernetes håndtere automatisk med resourcen \textbf{service} \fxfatal{termer kubernetes service}. Ingress er det at mappe en meningsfuld url til en service i kubernetes. Ingress er den eneste grænseflade til internettet, udover selve kubernetes kontrol fladen.
+Kubernetes vil aktivere et produkt når det har bestået tests, dvs. koble det til en load balancer \cite{documentation_terms} og en ingress \cite{documentation_terms}. Load balancing gør at man kan have horizontal applikations skalering \cite{documentation_terms}. Horizontal applikations skalering er det at skallere en applikation til mange identiske og parallelle. Dette er noget Kubernetes håndtere automatisk med resourcen \textbf{service} \cite{documentation_terms}. Ingress er det at mappe en meningsfuld url til en service i kubernetes. Ingress er den eneste grænseflade til internettet, udover selve kubernetes kontrol fladen.
 
 
 \section{Deaktivering}
 
-Kubernetes vil automatisk deaktivere et produkt, når en ny version har bestået nogle basale tests. Derefter vil den overflødige pod(s) blive deaktiveret og fjernet fra internettet, samt deallokeret. Til feature deaktivering er feature flags i gitlab brugt. Feature flags er i dette tilfælde environment variable \fxfatal{termer environment variable}, som applikationen kan se og håndtere. Et alternativ er at lave et database opslag, som f.eks. en setting, som man kan styre udefra, muligvis med en administrator grænseflade. Men i dette tilfælde er der brugt feature flags, samt simple feature branches \fxfatal{termer feature branches}, normalt vil dette ikke tælle som deaktivering, men fordi der er så kort tid fra indlevering af kode, til udrulning, så kan begrebet GitOps anvendes \fxfatal{termer GitOps}. GitOps betyder GitOperations og betyder at have hele ens miljø direkte i Git, lige fra infrastruktur som kubernetes til applikations kode og til variable til feature toggling \fxfatal{termer feature toggling}.
+Kubernetes vil automatisk deaktivere et produkt, når en ny version har bestået nogle basale tests. Derefter vil den overflødige pod(s) blive deaktiveret og fjernet fra internettet, samt deallokeret. Til feature deaktivering er feature flags i gitlab brugt. Feature flags er i dette tilfælde environment variable \cite{documentation_terms}, som applikationen kan se og håndtere. Et alternativ er at lave et database opslag, som f.eks. en setting, som man kan styre udefra, muligvis med en administrator grænseflade. Men i dette tilfælde er der brugt feature flags, samt simple feature branches \cite{documentation_terms}, normalt vil dette ikke tælle som deaktivering, men fordi der er så kort tid fra indlevering af kode, til udrulning, så kan begrebet GitOps anvendes \cite{documentation_terms}. GitOps betyder GitOperations og betyder at have hele ens miljø direkte i Git, lige fra infrastruktur som kubernetes til applikations kode og til variable til feature toggling \cite{documentation_terms}.
 
 \section{Opdatering}
 
-Det at opdatere i kubernetes er ikke gjort ret meget, da kubernetes køre efter den philosofi, kvæ ikke køledyr \fxfatal{Kubernetes cattle not pets}. Hvilket betyder at der ikke er behov for at passe godt på de enkelte services, og måske kun opdatere et bibliotek af gangen, eller ændre en smule i en dll. Med kubernetes, bliver det hele erstattet og et nyt frisk docker image tager dets plads.
+Det at opdatere i kubernetes er ikke gjort ret meget, da kubernetes køre efter den philosofi, kvæ ikke køledyr \cite{documentation_terms}. Hvilket betyder at der ikke er behov for at passe godt på de enkelte services, og måske kun opdatere et bibliotek af gangen, eller ændre en smule i en dll. Med kubernetes, bliver det hele erstattet og et nyt frisk docker image tager dets plads.
 
 \section{Indbygget opdatering}
 
@@ -121,4 +132,4 @@ Indbygget opdatering kunne godt være brugt til converge-spa, men så brugeren f
 
 \section{Versions sporing}
 
-Fordi GitOps er brugt, er der meget af den information der ender i Kubernetes under streng versions kontrol og derfor sporing. Lige præcis den version af et Helm chart er ikke logget i Git, men er tilgængelig via. helm cli \fxfatal{termer Helm commandline interface}. Det samme gælder docker images. Docker images er gemt i GitLab og er tilgængelige der. Alt dette er under versions sporing, så et enkelt commit i git kan spores til den kørende kode i Kubernetes, og omvendt.
+Fordi GitOps er brugt, er der meget af den information der ender i Kubernetes under streng versions kontrol og derfor sporing. Lige præcis den version af et Helm chart er ikke logget i Git, men er tilgængelig via. helm cli \cite{documentation_terms}. Det samme gælder docker images. Docker images er gemt i GitLab og er tilgængelige der. Alt dette er under versions sporing, så et enkelt commit i git kan spores til den kørende kode i Kubernetes, og omvendt.
